@@ -26,12 +26,24 @@
 
 @implementation RYCuteView
 
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    
+    if(self)
+    {
+        [self configShapeLayer];
+        [self configCurveView];
+        [self configAction];
+        [self updateShapeLayerPath];
+    }
+    
+    return self;
+}
+
 - (void)drawRect:(CGRect)rect
 {
-    [self configShapeLayer];
-    [self configCurveView];
-    [self configAction];
-    [self updateShapeLayerPath];
+
 }
 
 #pragma mark -
@@ -131,9 +143,9 @@
 {
     // 更新_shapeLayer形状
     UIBezierPath *tPath = [UIBezierPath bezierPath];
-    [tPath moveToPoint:CGPointMake(0, 0)];                              //r1点
+    [tPath moveToPoint:CGPointMake(0, 0)];                              // r1点
     [tPath addLineToPoint:CGPointMake(SYS_DEVICE_WIDTH, 0)];            // r2点
-    [tPath addLineToPoint:CGPointMake(SYS_DEVICE_WIDTH,  MIN_HEIGHT)];  //r4点
+    [tPath addLineToPoint:CGPointMake(SYS_DEVICE_WIDTH,  MIN_HEIGHT)];  // r4点
     [tPath addQuadCurveToPoint:CGPointMake(0, MIN_HEIGHT)
                   controlPoint:CGPointMake(_curveX, _curveY)]; // r3,r4,r5确定的一个弧线
     [tPath closePath];
