@@ -26,24 +26,39 @@
 
 @implementation RYCuteView
 
+static NSString *kX = @"curveX";
+static NSString *kY = @"curveY";
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     
     if(self)
     {
+        [self addObserver:self forKeyPath:kX options:NSKeyValueObservingOptionNew context:nil];
+        [self addObserver:self forKeyPath:kY options:NSKeyValueObservingOptionNew context:nil];
         [self configShapeLayer];
         [self configCurveView];
         [self configAction];
-        [self updateShapeLayerPath];
     }
     
     return self;
 }
 
+- (void)dealloc {
+    [self removeObserver:self forKeyPath:kX];
+    [self removeObserver:self forKeyPath:kY];
+}
+
 - (void)drawRect:(CGRect)rect
 {
+    
+}
 
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:kX] || [keyPath isEqualToString:kY]) {
+        [self updateShapeLayerPath];
+    }
 }
 
 #pragma mark -
@@ -75,8 +90,8 @@
 - (void)configCurveView
 {
     // _curveView就是r5点
-    _curveX = SYS_DEVICE_WIDTH/2.0;       // r5点x坐标
-    _curveY = MIN_HEIGHT;                 // r5点y坐标
+    self.curveX = SYS_DEVICE_WIDTH/2.0;       // r5点x坐标
+    self.curveY = MIN_HEIGHT;                 // r5点y坐标
     _curveView = [[UIView alloc] initWithFrame:CGRectMake(_curveX, _curveY, 3, 3)];
     _curveView.backgroundColor = [UIColor redColor];
     [self addSubview:_curveView];
@@ -96,16 +111,12 @@
             
             // 这部分代码使r5红点跟着手势走
             _mHeight = point.y*0.7 + MIN_HEIGHT;
-            _curveX = SYS_DEVICE_WIDTH/2.0 + point.x;
-            _curveY = _mHeight > MIN_HEIGHT ? _mHeight : MIN_HEIGHT;
+            self.curveX = SYS_DEVICE_WIDTH/2.0 + point.x;
+            self.curveY = _mHeight > MIN_HEIGHT ? _mHeight : MIN_HEIGHT;
             _curveView.frame = CGRectMake(_curveX,
                                           _curveY,
                                           _curveView.frame.size.width,
                                           _curveView.frame.size.height);
-            
-            // 根据r5的坐标,更新_shapeLayer形状
-            [self updateShapeLayerPath];
-            
         }
         else if (pan.state == UIGestureRecognizerStateCancelled ||
                  pan.state == UIGestureRecognizerStateEnded ||
@@ -122,19 +133,19 @@
                   initialSpringVelocity:0
                                 options:UIViewAnimationOptionCurveEaseInOut
                              animations:^{
-
-                // 曲线点(r5点)是一个view.所以在block中有弹簧效果.然后根据他的动效路径,在calculatePath中计算弹性图形的形状
-                _curveView.frame = CGRectMake(SYS_DEVICE_WIDTH/2.0, MIN_HEIGHT, 3, 3);
-                
-            } completion:^(BOOL finished) {
-                
-                if(finished)
-                {
-                    _displayLink.paused = YES;
-                    _isAnimating = NO;
-                }
-                
-            }];
+                                 
+                                 // 曲线点(r5点)是一个view.所以在block中有弹簧效果.然后根据他的动效路径,在calculatePath中计算弹性图形的形状
+                                 _curveView.frame = CGRectMake(SYS_DEVICE_WIDTH/2.0, MIN_HEIGHT, 3, 3);
+                                 
+                             } completion:^(BOOL finished) {
+                                 
+                                 if(finished)
+                                 {
+                                     _displayLink.paused = YES;
+                                     _isAnimating = NO;
+                                 }
+                                 
+                             }];
         }
     }
 }
@@ -157,9 +168,8 @@
 {
     // 由于手势结束时,r5执行了一个UIView的弹簧动画,把这个过程的坐标记录下来,并相应的画出_shapeLayer形状
     CALayer *layer = _curveView.layer.presentationLayer;
-    _curveX = layer.position.x;
-    _curveY = layer.position.y;
-    [self updateShapeLayerPath];
+    self.curveX = layer.position.x;
+    self.curveY = layer.position.y;
 }
 
 @end
