@@ -124,7 +124,24 @@ static NSString *kY = @"curveY";
         {
             // 手势结束时,_shapeLayer返回原状并产生弹簧动效
             _isAnimating = YES;
-            _displayLink.paused = NO;           //开启displaylink,会执行方法calculatePath.
+            _displayLink.paused = YES;           //开启displaylink,会执行方法calculatePath.
+            /**
+             首先先明确一下我的观点（kvo）方法执行的时机就是属性发生了改变才执行（就是set方法被调用才执行，_isa指针啊运行时啊我就是皮毛）我是这样理解的。
+             
+             我是这个意思
+             我的意思是我根本不想用 [CADisplayLink displayLinkWithTarget:self selector:@selector(calculatePath)];
+             用这个方法的目的不就是为了多次 当弹簧效果开始时 （小红点的 x和y改变时）self.curveY = layer.position.y;调用了set方法 observeValueForKeyPath执行
+             从而调用[self updateShapeLayerPath];实现shapeView的形状改变的吗？
+             
+             既然根本上是view的x和y改变了（就是调用set方法才调用KVO）就执行kvo。那么我们不写CADisplayLink又如何。当view执行弹簧效果时view的x，y显然改变了，改变就该调用set方法啊。就该执行kvo啊效果应该一样啊。效果并不是我想的那样
+             
+             难道只有我们自己这样 self.curveX = layer.position.x; self.curveY = layer.position.y;才算调用了set方法？弹簧效果不算调set方法。
+
+             
+             
+             */
+            
+            
             
             // 弹簧动效
             [UIView animateWithDuration:1.0
