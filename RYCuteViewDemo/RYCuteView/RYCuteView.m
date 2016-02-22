@@ -107,16 +107,13 @@ static NSString *kY = @"curveY";
         if(pan.state == UIGestureRecognizerStateChanged)
         {
             // 手势移动时，_shapeLayer跟着手势向下扩大区域
-            CGPoint point = [pan translationInView:self];
-            
-            // 这部分代码使r5红点跟着手势走
-            _mHeight = point.y*0.7 + MIN_HEIGHT;
-            self.curveX = SYS_DEVICE_WIDTH/2.0 + point.x;
-            self.curveY = _mHeight > MIN_HEIGHT ? _mHeight : MIN_HEIGHT;
-            _curveView.frame = CGRectMake(_curveX,
-                                          _curveY,
-                                          _curveView.frame.size.width,
-                                          _curveView.frame.size.height);
+            CGPoint changePoint = [pan translationInView:self];
+            CGPoint positionPoint = [pan locationInView:self];
+            CGFloat x = positionPoint.x;
+            CGFloat y = MAX(MIN_HEIGHT, MIN_HEIGHT + changePoint.y);
+            self.curveX = x;
+            self.curveY = 2 * y - MIN_HEIGHT;
+            _curveView.frame = CGRectMake(x, y, _curveView.frame.size.width, _curveView.frame.size.height);
         }
         else if (pan.state == UIGestureRecognizerStateCancelled ||
                  pan.state == UIGestureRecognizerStateEnded ||
